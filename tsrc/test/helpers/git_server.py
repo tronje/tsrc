@@ -1,3 +1,11 @@
+""" The GitServer class allows you to create bare
+git repositories and manifest that contains
+valid git URL
+
+It is mostly used by the end-to-end tests in tsrc/cli/
+"""
+
+
 from typing import cast, Any, Dict, List, Tuple
 import ruamel.yaml
 import pytest
@@ -11,6 +19,8 @@ RemoteConfig = Tuple[str, str]
 
 
 class TestRepo:
+    """ Simple wrapper over pygit2 """
+
     user = pygit2.Signature("Tasty Test", "test@tsrc.io")
 
     def __init__(self, path: Path) -> None:
@@ -71,6 +81,16 @@ class TestRepo:
 
 
 class ManifestHandler:
+    """ Contains methods to update repositories configuration
+    in the manifest repo.
+
+    Data is written directly to the underlying TestRepo instance,
+    using `refs/heads/master` ref by default.
+
+    After a call `change_branch(new_branch)`, changes will be
+    written to refs/heads/new_branch` instead.
+    """
+
     def __init__(self, repo: TestRepo) -> None:
         self.repo = repo
         self.data = {"repos": []}  # type: Dict[str, Any]
@@ -146,6 +166,14 @@ class ManifestHandler:
 
 
 class GitServer:
+    """ Holds a collection of git repositories in
+    `self.bare_path, itself a subdirectory of
+    `tmpdir`.
+
+    Also uses a ManifestHandler instance to update the manifest
+    configuration, like adding a new repo.
+    """
+
     def __init__(self, tmpdir: Path) -> None:
         self.tmpdir = tmpdir
         self.bare_path = tmpdir / "srv"

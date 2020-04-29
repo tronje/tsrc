@@ -1,3 +1,8 @@
+""" Helper to cal tsrc's main() function
+
+Used by the `tsrc_cli` fixture
+"""
+
 from typing import Any
 import os
 from path import Path
