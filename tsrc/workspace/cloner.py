@@ -20,7 +20,7 @@ class Cloner(tsrc.executor.Task[tsrc.Repo]):
         ui.error("Failed to clone missing repos")
 
     def display_item(self, repo: tsrc.Repo) -> str:
-        return repo.src
+        return repo.dest
 
     def check_shallow_with_sha1(self, repo: tsrc.Repo) -> None:
         if not repo.sha1:
@@ -34,7 +34,7 @@ class Cloner(tsrc.executor.Task[tsrc.Repo]):
             raise tsrc.Error(message)
 
     def clone_repo(self, repo: tsrc.Repo) -> None:
-        repo_path = self.workspace_path / repo.src
+        repo_path = self.workspace_path / repo.dest
         parent, name = repo_path.splitpath()
         parent.makedirs_p()
         first_remote = repo.remotes[0]
@@ -57,17 +57,17 @@ class Cloner(tsrc.executor.Task[tsrc.Repo]):
             raise tsrc.Error("Cloning failed")
 
     def reset_repo(self, repo: tsrc.Repo) -> None:
-        repo_path = self.workspace_path / repo.src
+        repo_path = self.workspace_path / repo.dest
         ref = repo.sha1
         if ref:
-            ui.info_2("Resetting", repo.src, "to", ref)
+            ui.info_2("Resetting", repo.dest, "to", ref)
             try:
                 tsrc.git.run(repo_path, "reset", "--hard", ref)
             except tsrc.Error:
                 raise tsrc.Error("Resetting to", ref, "failed")
 
     def process(self, index: int, count: int, repo: tsrc.Repo) -> None:
-        ui.info_count(index, count, repo.src)
+        ui.info_count(index, count, repo.dest)
         self.check_shallow_with_sha1(repo)
         self.clone_repo(repo)
         self.reset_repo(repo)

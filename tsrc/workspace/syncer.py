@@ -14,7 +14,7 @@ class BadBranches(tsrc.Error):
 
 @attr.s(frozen=True)
 class RepoAtIncorrectBranchDescription:
-    src = attr.ib()  # type: str
+    dest = attr.ib()  # type: str
     actual = attr.ib()  # type: str
     expected = attr.ib()  # type: str
 
@@ -32,11 +32,11 @@ class Syncer(tsrc.executor.Task[tsrc.Repo]):
         ui.error("Failed to synchronize workspace")
 
     def display_item(self, repo: tsrc.Repo) -> str:
-        return repo.src
+        return repo.dest
 
     def process(self, index: int, count: int, repo: tsrc.Repo) -> None:
-        ui.info_count(index, count, repo.src)
-        repo_path = self.workspace_path / repo.src
+        ui.info_count(index, count, repo.dest)
+        repo_path = self.workspace_path / repo.dest
         self.fetch(repo)
         ref = None
 
@@ -61,12 +61,12 @@ class Syncer(tsrc.executor.Task[tsrc.Repo]):
         if current_branch and current_branch != repo.branch:
             self.bad_branches.append(
                 RepoAtIncorrectBranchDescription(
-                    src=repo.src, actual=current_branch, expected=repo.branch
+                    dest=repo.dest, actual=current_branch, expected=repo.branch
                 )
             )
 
     def fetch(self, repo: tsrc.Repo) -> None:
-        repo_path = self.workspace_path / repo.src
+        repo_path = self.workspace_path / repo.dest
         for remote in repo.remotes:
             try:
                 ui.info_2("Fetching", remote.name)
@@ -102,7 +102,7 @@ class Syncer(tsrc.executor.Task[tsrc.Repo]):
         ui.error("Some projects were not on the correct branch")
         headers = ("project", "actual", "expected")
         data = [
-            ((ui.bold, x.src), (ui.red, x.actual), (ui.green, x.expected))
+            ((ui.bold, x.dest), (ui.red, x.actual), (ui.green, x.expected))
             for x in self.bad_branches
         ]
         ui.info_table(data, headers=headers)
